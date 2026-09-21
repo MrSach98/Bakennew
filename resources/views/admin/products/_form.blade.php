@@ -8,10 +8,10 @@
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-category" type="button">Category</button>
     </li>
     <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-pricing" type="button">Pricing</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-variants" type="button">Weight Variants</button>
     </li>
     <li class="nav-item">
-        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-variants" type="button">Weight Variants</button>
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-pricing" type="button" id="pricingTabBtn">Pricing</button>
     </li>
     <li class="nav-item">
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-attributes" type="button">Flavors / Addons / Occasions / Delivery</button>

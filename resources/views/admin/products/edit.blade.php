@@ -2,7 +2,12 @@
 @section('title', 'Edit Product')
 
 @section('content')
-<h4 class="mb-4">Edit Product</h4>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0">Edit Product</h4>
+    <a href="{{ route('admin.products.index') }}" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Products
+    </a>
+</div>
 
 {{-- ✅ Data prepare karo pehle, phir @json mein daalo --}}
 @if(isset($product))

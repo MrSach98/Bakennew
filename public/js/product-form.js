@@ -79,6 +79,37 @@ document.addEventListener('DOMContentLoaded', async function () {
     }
 });
 
+function toggleBasePriceRequirement() {
+    const hasVariants = document.querySelectorAll('#variantRows tr').length > 0;
+    const pricingTabBtn = document.getElementById('pricingTabBtn');
+    const basePriceInput = document.querySelector('input[name="base_price"]');
+
+    if (hasVariants) {
+        pricingTabBtn.closest('.nav-item').style.display = 'none';
+        if (basePriceInput) {
+            basePriceInput.removeAttribute('required');
+            basePriceInput.removeAttribute('data-required');
+        }
+    } else {
+        pricingTabBtn.closest('.nav-item').style.display = '';
+        if (basePriceInput) {
+            basePriceInput.setAttribute('required', 'required');
+            basePriceInput.setAttribute('data-required', 'true');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const variantRows = document.getElementById('variantRows');
+
+    // MutationObserver — row add/remove hote hi turant check karega
+    const observer = new MutationObserver(toggleBasePriceRequirement);
+    observer.observe(variantRows, { childList: true });
+
+    // Page load pe bhi ek baar (Edit mode ke existing variants ke liye)
+    setTimeout(toggleBasePriceRequirement, 300);
+});
+
 function deleteExistingImage(imageId, btn) {
     if (!confirm('Delete this image?')) return;
 

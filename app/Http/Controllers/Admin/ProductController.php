@@ -161,39 +161,81 @@ class ProductController extends Controller
         ];
     }
 
+    // private function validateData(Request $request): array
+    // {
+    //     $data = $request->validate([
+    //         'category_id' => ['required', 'exists:categories,id'],
+    //         'subcategory_id' => ['nullable', 'exists:categories,id'],
+    //         'child_category_id' => ['nullable', 'exists:categories,id'],
+    //         'name' => ['required', 'string', 'max:255'],
+    //         'sku' => ['nullable', 'string', 'max:100'],
+    //         'short_description' => ['nullable', 'string'],
+    //         'description' => ['nullable', 'string'],
+    //         'base_price' => ['required', 'numeric', 'min:0'],
+    //         'discount_price' => ['nullable', 'numeric', 'min:0'],
+    //         'egg_type' => ['required', 'in:egg,eggless,both'],
+    //         'is_photo_cake' => ['nullable', 'boolean'],
+    //         'is_message_enabled' => ['nullable', 'boolean'],
+    //         'message_char_limit' => ['nullable', 'integer', 'min:1'],
+    //         'meta_title' => ['nullable', 'string', 'max:255'],
+    //         'meta_description' => ['nullable', 'string'],
+    //         'meta_keywords' => ['nullable', 'string', 'max:255'],
+    //         'is_featured' => ['nullable', 'boolean'],
+    //         'is_bestseller' => ['nullable', 'boolean'],
+    //         'status' => ['required', 'in:active,inactive,draft'],
+    //     ]);
+
+    //     $data['is_photo_cake'] = $request->boolean('is_photo_cake');
+    //     $data['is_message_enabled'] = $request->boolean('is_message_enabled');
+    //     $data['is_featured'] = $request->boolean('is_featured');
+    //     $data['is_bestseller'] = $request->boolean('is_bestseller');
+    //     $data['message_char_limit'] = $data['message_char_limit'] ?? 30;
+
+    //     return $data;
+    // }
+    
     private function validateData(Request $request): array
-    {
-        $data = $request->validate([
-            'category_id' => ['required', 'exists:categories,id'],
-            'subcategory_id' => ['nullable', 'exists:categories,id'],
-            'child_category_id' => ['nullable', 'exists:categories,id'],
-            'name' => ['required', 'string', 'max:255'],
-            'sku' => ['nullable', 'string', 'max:100'],
-            'short_description' => ['nullable', 'string'],
-            'description' => ['nullable', 'string'],
-            'base_price' => ['required', 'numeric', 'min:0'],
-            'discount_price' => ['nullable', 'numeric', 'min:0'],
-            'egg_type' => ['required', 'in:egg,eggless,both'],
-            'is_photo_cake' => ['nullable', 'boolean'],
-            'is_message_enabled' => ['nullable', 'boolean'],
-            'message_char_limit' => ['nullable', 'integer', 'min:1'],
-            'meta_title' => ['nullable', 'string', 'max:255'],
-            'meta_description' => ['nullable', 'string'],
-            'meta_keywords' => ['nullable', 'string', 'max:255'],
-            'is_featured' => ['nullable', 'boolean'],
-            'is_bestseller' => ['nullable', 'boolean'],
-            'status' => ['required', 'in:active,inactive,draft'],
-        ]);
+{
+    $hasVariants = $request->filled('variant_weight_id') && count(array_filter($request->input('variant_weight_id', []))) > 0;
 
-        $data['is_photo_cake'] = $request->boolean('is_photo_cake');
-        $data['is_message_enabled'] = $request->boolean('is_message_enabled');
-        $data['is_featured'] = $request->boolean('is_featured');
-        $data['is_bestseller'] = $request->boolean('is_bestseller');
-        $data['message_char_limit'] = $data['message_char_limit'] ?? 30;
+    $data = $request->validate([
+        'category_id' => ['required', 'exists:categories,id'],
+        'subcategory_id' => ['nullable', 'exists:categories,id'],
+        'child_category_id' => ['nullable', 'exists:categories,id'],
+        'name' => ['required', 'string', 'max:255'],
+        'sku' => ['nullable', 'string', 'max:100'],
+        'short_description' => ['nullable', 'string'],
+        'description' => ['nullable', 'string'],
+        'base_price' => [$hasVariants ? 'nullable' : 'required', 'numeric', 'min:0'],
+        'discount_price' => ['nullable', 'numeric', 'min:0'],
+        'egg_type' => ['required', 'in:egg,eggless,both'],
+        'is_photo_cake' => ['nullable', 'boolean'],
+        'is_message_enabled' => ['nullable', 'boolean'],
+        'message_char_limit' => ['nullable', 'integer', 'min:1'],
+        'meta_title' => ['nullable', 'string', 'max:255'],
+        'meta_description' => ['nullable', 'string', 'max:300'],
+        'meta_keywords' => ['nullable', 'string', 'max:255'],
+        'is_featured' => ['nullable', 'boolean'],
+        'is_bestseller' => ['nullable', 'boolean'],
+        'status' => ['required', 'in:active,inactive,draft'],
+        'delivery_charge_override' => ['nullable', 'numeric', 'min:0'],
+    ]);
 
-        return $data;
+    $data['is_photo_cake'] = $request->boolean('is_photo_cake');
+    $data['is_message_enabled'] = $request->boolean('is_message_enabled');
+    $data['is_featured'] = $request->boolean('is_featured');
+    $data['is_bestseller'] = $request->boolean('is_bestseller');
+    $data['message_char_limit'] = $data['message_char_limit'] ?? 30;
+
+    // Agar variants hain aur base_price khaali hai, to sabse pehle (default) variant ka price
+    // hi base_price bana do — taaki listing/homepage/cards pe display price hamesha kuch dikhe
+    if ($hasVariants && empty($data['base_price'])) {
+        $prices = array_filter($request->input('variant_price', []));
+        $data['base_price'] = ! empty($prices) ? min($prices) : 0;
     }
 
+    return $data;
+}
     private function syncRelations(Request $request, Product $product): void
     {
         // Flavors: array of flavor_id[] with matching price_modifier[]
