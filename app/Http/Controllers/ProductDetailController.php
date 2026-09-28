@@ -81,16 +81,23 @@ class ProductDetailController extends StorefrontController
        // $reviewCount = $approvedReviews->count();
 
         // Kya current user is product ko review kar sakta hai (delivered order se)
-        $reviewableItems = [];
+        // $reviewableItems = [];
+        // if (auth()->check()) {
+        //     $reviewableItems = OrderItem::where('product_id', $product->id)
+        //         ->whereHas('order', fn ($q) => $q->where('user_id', auth()->id())->where('status', 'delivered'))
+        //         ->whereDoesntHave('review')
+        //         ->get(['id', 'weight_label', 'quantity']);
+        //        // $reviewableItems = OrderItem::where('product_id', $product->id)
+        //      // ->whereHas('order', fn ($q) => $q->where('user_id', auth()->id())->where('status', 'delivered'))
+        //     // ->get(['id', 'weight_label', 'quantity']);
+        // }    
+        $reviewableItems = collect();
         if (auth()->check()) {
             $reviewableItems = OrderItem::where('product_id', $product->id)
                 ->whereHas('order', fn ($q) => $q->where('user_id', auth()->id())->where('status', 'delivered'))
                 ->whereDoesntHave('review')
                 ->get(['id', 'weight_label', 'quantity']);
-               // $reviewableItems = OrderItem::where('product_id', $product->id)
-             // ->whereHas('order', fn ($q) => $q->where('user_id', auth()->id())->where('status', 'delivered'))
-            // ->get(['id', 'weight_label', 'quantity']);
-        }    
+        }
         return view('product-detail', compact(
             'product', 'relatedProducts', 'recentlyViewed',
             'variantsByWeight', 'defaultVariant', 'servingInfo','reviewCount', 'avgRating', 'reviewPhotos',

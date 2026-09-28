@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+    use App\Mail\ReviewRequestMail;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -89,6 +91,22 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
+    // public function updateStatus(Request $request, Order $order)
+    // {
+    //     $validated = $request->validate([
+    //         'status' => ['required', 'in:pending,confirmed,preparing,out_for_delivery,delivered,cancelled'],
+    //         'cancellation_reason' => ['nullable', 'string', 'max:500'],
+    //     ]);
+
+    //     $order->update([
+    //         'status' => $validated['status'],
+    //         'cancellation_reason' => $validated['status'] === 'cancelled' ? ($validated['cancellation_reason'] ?? null) : null,
+    //     ]);
+
+    //     return response()->json(['success' => true, 'message' => 'Order status updated successfully.']);
+    // }
+
+
     public function updateStatus(Request $request, Order $order)
     {
         $validated = $request->validate([
@@ -96,10 +114,21 @@ class OrderController extends Controller
             'cancellation_reason' => ['nullable', 'string', 'max:500'],
         ]);
 
+        $previousStatus = $order->status;
+
         $order->update([
             'status' => $validated['status'],
             'cancellation_reason' => $validated['status'] === 'cancelled' ? ($validated['cancellation_reason'] ?? null) : null,
         ]);
+
+        // Send the review request only once, when the order first becomes "delivered"
+        if ($validated['status'] === 'delivered' && $previousStatus !== 'delivered' && $order->user_id && $order->customer_email) {
+            try {
+                Mail::to($order->customer_email)->send(new ReviewRequestMail($order));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         return response()->json(['success' => true, 'message' => 'Order status updated successfully.']);
     }

@@ -57,6 +57,10 @@
                     <a href="{{ route('account.reviews.index') }}" class="d-block py-2 text-decoration-none {{ request()->routeIs('account.reviews.*') ? 'text-danger fw-bold' : 'text-dark' }}">
                         <i class="fa-regular fa-comment-dots me-2"></i> My Reviews
                     </a>
+                    <i class="fa-regular fa-comment-dots me-2"></i> My Reviews
+                        @if (($pendingReviewCount ?? 0) > 0)
+                            <span class="badge bg-danger rounded-pill ms-1">{{ $pendingReviewCount }}</span>
+                        @endif
                 </li>
                 @if ($siteSettings->contact_phone ?? null)
                 <li>

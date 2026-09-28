@@ -17,5 +17,10 @@ abstract class AccountBaseController extends StorefrontController
         }
 
         View::share('accountUser', auth()->user());
+        View::share('pendingReviewCount', \App\Models\OrderItem::whereNotNull('product_id')
+    ->whereHas('product')
+    ->whereHas('order', fn ($q) => $q->where('user_id', auth()->id())->where('status', 'delivered'))
+    ->whereDoesntHave('review')
+    ->count());
     }
 }
