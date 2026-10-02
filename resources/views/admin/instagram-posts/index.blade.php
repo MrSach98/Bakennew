@@ -6,7 +6,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h4 class="mb-0">Instagram Posts</h4>
-        <small class="text-muted">Ye homepage ke "What's In Your Heart?" section me dikhenge</small>
+        <small class="text-muted">These will appear in the “What’s In Your Heart?” section on the homepage.</small>
     </div>
     <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#igModal" onclick="openAddModal()">
         + Add Instagram Post
@@ -46,14 +46,14 @@
                     <div class="mb-3">
                         <label class="form-label">Instagram Post/Reel Link <span class="text-danger">*</span></label>
                         <input type="url" name="post_url" id="post_url" class="form-control" placeholder="https://www.instagram.com/reel/xxxxxxxxx/" required>
-                        <div class="form-text">Isi link par customer "View" click karte hi pahunchega.</div>
+                        <div class="form-text">The customer will land on this link as soon as they click “View.”</div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Image/Thumbnail <span class="text-danger" id="imageRequiredMark">*</span></label>
                         <input type="file" name="thumbnail_image" class="form-control" accept="image/*">
                         <img id="imagePreview" class="mt-2 rounded d-none" width="80">
-                        <div class="form-text">Video ke liye uska ek screenshot/thumbnail yahan upload karo — ye hi site par dikhega.</div>
+                        <div class="form-text">Upload a screenshot/thumbnail for the video here — this will be displayed on the site.</div>
                     </div>
 
                     <div class="mb-3">
