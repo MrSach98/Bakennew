@@ -8,38 +8,44 @@ use App\Models\SiteSetting;
 
 class DeliveryChargeCalculator
 {
-    /**
-     * The ONLY place delivery charge is ever computed. Always called
-     * server-side — never trust a charge value coming from the client.
-     */
     public static function calculate(float $subtotal, string $pincode, DeliveryOption $deliveryOption, $cartItems): float
     {
         $settings = SiteSetting::current();
 
-        if ($subtotal >= (float) $settings->free_delivery_threshold) {
-            return 0;
-        }
+        // ---------- 1. Base charge ----------
+        $baseCharge = 0.0;
 
+        // (a) product-level override wins
         $productOverride = collect($cartItems)
             ->map(fn ($item) => $item->product->delivery_charge_override ?? null)
             ->filter()
             ->max();
 
         if ($productOverride !== null) {
-            return (float) $productOverride;
+            $baseCharge = (float) $productOverride;
+        } else {
+            // (b) pincode-level charge (agar tumhare table me 'charge' column hai)
+            $pincodeRecord = ServiceablePincode::where('pincode', $pincode)
+                ->where('is_active', true)
+                ->first();
+
+            if ($pincodeRecord && isset($pincodeRecord->charge) && $pincodeRecord->charge !== null) {
+                $baseCharge = (float) $pincodeRecord->charge;
+            } else {
+                // (c) fallback to default
+                $baseCharge = (float) $settings->default_delivery_charge;
+            }
         }
 
-        $pincodeRecord = ServiceablePincode::where('pincode', $pincode)->where('is_active', true)->first();
-        $locationCharge = $pincodeRecord?->chargeForSlug($deliveryOption->slug);
-
-        if ($locationCharge !== null) {
-            return (float) $locationCharge;
+        // ---------- 2. Free-delivery threshold zeroes ONLY the base ----------
+        $threshold = (float) ($settings->free_delivery_threshold ?? 0);
+        if ($threshold > 0 && $subtotal >= $threshold) {
+            $baseCharge = 0.0;
         }
 
-        if ($deliveryOption->extra_charge > 0) {
-            return (float) $deliveryOption->extra_charge;
-        }
+        // ---------- 3. Premium surcharge ALWAYS applies ----------
+        $extraCharge = (float) ($deliveryOption->extra_charge ?? 0);
 
-        return (float) $settings->default_delivery_charge;
+        return round($baseCharge + $extraCharge, 2);
     }
 }

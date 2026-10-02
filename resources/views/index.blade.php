@@ -137,9 +137,15 @@
 
                     <h3><a href="{{ url('/product/'.$product->slug) }}">{{ $product->name }}</a></h3>
 
-                    <div class="product-meta">
+                    <!-- <div class="product-meta">
                         <strong>₹{{ number_format($price, 0) }}</strong>
                         <a href="{{ url('/wishlist') }}">♡</a>
+                    </div> -->
+                    <div class="product-meta">
+                        <strong>₹{{ number_format($price, 0) }}</strong>
+                        <button type="button" class="btn-wishlist-toggle-home" data-product-id="{{ $product->id }}" style="background:none;border:none;">
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
                     </div>
 
                     @if ($reviewsCount > 0)
@@ -177,24 +183,26 @@
     </div>
 </section>
 
-@php $heartProducts = ($featured->count() ? $featured : $bestsellers)->take(7)->values(); @endphp
 <section class="social-section">
     <div class="home-heading"><h2>What’s In Your Heart?</h2><p>A glimpse from our social world!</p></div>
-    @if ($heartProducts->count())
+    @if ($instagramPosts->count())
     <div class="heart-coverflow" id="heartCoverflow" aria-label="Featured cake gallery">
         <button class="heart-slider-arrow heart-slider-prev" type="button" aria-label="Previous image"><i class="fa-solid fa-chevron-left"></i></button>
         <div class="heart-slider-stage">
-            @foreach ($heartProducts as $product)
-            <a class="heart-slide" data-index="{{ $loop->index }}" href="{{ url('/product/'.$product->slug) }}" aria-label="View {{ $product->name }}">
-                @if($product->primaryImage)<img src="{{ asset($product->primaryImage->image_path) }}" alt="{{ $product->name }}">@else<img src="{{ asset('userassets/products/1787796345_ked4JJ3L.png') }}" alt="{{ $product->name }}">@endif
+            @foreach ($instagramPosts as $post)
+           
+            <a class="heart-slide" href="{{ $post->post_url }}" target="_blank" rel="noopener" data-index="{{ $loop->index }}" aria-label="View on Instagram">
+                <img src="{{ asset($post->thumbnail_image) }}" alt="{{ $post->caption }}">
                 <span class="heart-instagram"><i class="fa-brands fa-instagram"></i></span>
-                <div class="heart-slide-caption"><strong>{{ $product->name }}</strong><small>Made for your special moments</small></div>
+                <div class="heart-slide-caption">
+                    <strong>{{ $post->caption ?? 'View on Instagram' }}</strong>
+                </div>
             </a>
             @endforeach
         </div>
         <button class="heart-slider-arrow heart-slider-next" type="button" aria-label="Next image"><i class="fa-solid fa-chevron-right"></i></button>
         <div class="heart-slider-dots" aria-label="Choose a slide">
-            @foreach ($heartProducts as $product)<button type="button" data-slide="{{ $loop->index }}" aria-label="Show {{ $product->name }}"></button>@endforeach
+            @foreach ($instagramPosts as $post)<button type="button" data-slide="{{ $loop->index }}" aria-label="Show {{ $post->name }}"></button>@endforeach
         </div>
     </div>
     @endif

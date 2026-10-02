@@ -3,6 +3,21 @@
     $displayPrice = $variant ? ($variant->discount_price ?? $variant->price) : ($product->discount_price ?? $product->base_price);
     $oldPrice = $variant ? ($variant->discount_price ? $variant->price : null) : ($product->discount_price ? $product->base_price : null);
     $image = $product->primaryImage ?? $product->images->first();
+    $isWishlisted = auth()->check()
+        && $product->wishlists()->where('user_id', auth()->id())->exists();
+
+    // Reviews — controller me withCount/withAvg se aate hain (category page)
+    // ya avg_rating/reviews_count attribute (home bestsellers)
+    $rating = $product->avg_rating ?? 0;
+    $reviewsCount = $product->reviews_count ?? 0;
+
+    if ($reviewsCount >= 1000000) {
+        $formattedCount = round($reviewsCount / 1000000, 1) . 'M';
+    } elseif ($reviewsCount >= 1000) {
+        $formattedCount = round($reviewsCount / 1000, 1) . 'K';
+    } else {
+        $formattedCount = $reviewsCount;
+    }
 @endphp
 
 <div class="col-6 col-md-4 col-lg-4 category-product-column">
@@ -25,10 +40,19 @@
                 <strong>₹{{ number_format($displayPrice, 0) }}</strong>
                 @if ($oldPrice)<del>₹{{ number_format($oldPrice, 0) }}</del>@endif
             </div>
-            <button type="button" class="category-card-heart btn-wishlist-toggle" data-product-id="{{ $product->id }}" aria-label="Add {{ $product->name }} to wishlist">
-                <i class="fa-regular fa-heart"></i>
+             <button type="button"
+                    class="category-card-heart js-card-wishlist"
+                    data-product-id="{{ $product->id }}"
+                    aria-label="{{ $isWishlisted ? 'Remove from wishlist' : 'Add to wishlist' }}">
+                <i class="fa-{{ $isWishlisted ? 'solid' : 'regular' }} fa-heart {{ $isWishlisted ? 'text-danger' : '' }}"></i>
             </button>
         </div>
-        <small><b>4.9 <span>★</span></b> (1.8K Reviews)</small>
+
+        {{-- ✅ Real reviews --}}
+        @if ($reviewsCount > 0)
+            <small><b>{{ round($rating, 1) }} <span>★</span></b> ({{ $formattedCount }} {{ \Illuminate\Support\Str::plural('Review', $reviewsCount) }})</small>
+        @else
+            <small><b>New</b> (No reviews yet)</small>
+        @endif
     </article>
 </div>

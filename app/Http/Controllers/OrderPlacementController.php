@@ -18,6 +18,63 @@ use Illuminate\Support\Facades\Mail;
 
 class OrderPlacementController extends StorefrontController
 {
+        
+    public function calculateCharge(Request $request)
+    {
+        $validated = $request->validate([
+            'pincode' => ['required', 'string', 'max:10'],
+            'delivery_option_id' => ['required', 'integer', 'exists:delivery_options,id'],
+        ]);
+
+        $deliveryOption = DeliveryOption::where('id', $validated['delivery_option_id'])
+            ->where('is_active', true)
+            ->first();
+
+        if (! $deliveryOption) {
+            return response()->json(['success' => false, 'message' => 'Selected delivery option is not available.'], 422);
+        }
+
+        $owner = $this->cartOwnerQuery($request);
+
+        $cartItems = CartItem::where($owner)
+            ->where('status', 'active')
+            ->with(['product', 'productWeight', 'addon'])
+            ->get();
+
+        if ($cartItems->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Your cart is empty.'], 422);
+        }
+
+        $subtotal = $this->liveSubtotal($request);
+
+        $discount = 0;
+        $couponCode = session('applied_coupon_code');
+        if ($couponCode) {
+            $coupon = Coupon::where('code', $couponCode)->first();
+            if ($coupon && $coupon->isCurrentlyValid() && $subtotal >= $coupon->min_order_value) {
+                $discount = $coupon->calculateDiscount($subtotal);
+            }
+        }
+
+        $deliveryCharge = DeliveryChargeCalculator::calculate($subtotal, $validated['pincode'], $deliveryOption, $cartItems);
+
+        return response()->json([
+            'success' => true,
+            'subtotal' => round($subtotal, 2),
+            'delivery_charge' => round($deliveryCharge, 2),
+            'discount' => round($discount, 2),
+            'total' => round($subtotal + $deliveryCharge - $discount, 2),
+        ]);
+    }
+    private function cartOwnerQuery(Request $request): array
+    {
+        if (auth()->check()) {
+            return ['user_id' => auth()->id()];
+        }
+
+        return ['guest_token' => $request->cookie('guest_token')];
+    }
+
     public function applyCoupon(Request $request)
     {
         $validated = $request->validate(['coupon_code' => ['required', 'string', 'max:50']]);

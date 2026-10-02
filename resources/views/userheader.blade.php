@@ -129,6 +129,13 @@
                     @endauth
 
                     <a href="{{ url('/track-order') }}" class="header-icon-btn" title="Track Order"><svg class="header-fa-solid route-svg" viewBox="0 0 512 512" aria-hidden="true"><path d="M512 96c0 50.2-59.1 125.1-84.6 155-3.8 4.4-9.4 6.1-14.5 5H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c53 0 96 43 96 96s-43 96-96 96H139.6c8.7-9.9 19.3-22.6 30-36.8 6.3-8.4 12.8-17.6 19-27.2H416c17.7 0 32-14.3 32-32s-14.3-32-32-32h-96c-53 0-96-43-96-96s43-96 96-96h39.8C338.8 160.5 320 124.3 320 96c0-53 43-96 96-96s96 43 96 96zM117.1 489.1c-3.8 4.3-7.2 8.1-10.1 11.3l-1.8 2-.2-.2c-6 4.6-14.6 4-20-1.8C59.8 473 0 402.5 0 352c0-53 43-96 96-96s96 43 96 96c0 30-21.1 67-43.5 97.9-10.7 14.7-21.7 28-30.8 38.5l-.6.7zM128 352a32 32 0 1 0-64 0 32 32 0 1 0 64 0zM416 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg><small>Track Order</small></a>
+                    <a href="{{ url('/wishlist') }}" class="header-icon-btn" title="Wishlist">
+    <svg class="header-fa-solid" viewBox="0 0 512 512" aria-hidden="true" style="width:22px;height:22px;fill:currentColor;">
+        <path d="M225.8 468.2l-2.5-2.3L48.1 303.2C17.4 274.7 0 234.7 0 192.8v-3.3c0-70.4 50-130.8 119.2-144C158.6 37.9 198.9 47 231 69.6c9 6.4 17.4 13.8 25 22.1 7.5-8.2 15.9-15.6 25-22.1 32.1-22.6 72.4-31.7 111.8-23.9C462 59.2 512 119.6 512 190v3.3c0 41.9-17.4 81.9-48.1 110.4L288.7 465.9l-2.5 2.3c-8.3 7.6-19.2 11.8-30.2 11.8s-21.9-4.2-30.2-11.8z"/>
+    </svg>
+    <small>Wishlist</small>
+    <span class="badge rounded-pill {{ ($wishlistCount ?? 0) > 0 ? '' : 'd-none' }}" id="wishlistCount">{{ $wishlistCount ?? 0 }}</span>
+</a>
                     <a href="{{ url('/cart') }}" class="header-icon-btn" title="Cart"><img class="header-icon-img cart-icon-img" src="{{ asset('images/icons/cart-shopping.svg') }}?v=5" alt="">
                         <svg class="header-fa-solid cart-svg" viewBox="0 0 576 512" aria-hidden="true"><path d="M0 24C0 10.7 10.7 0 24 0h45.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1-96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"/></svg><small>Cart</small>
                         <span class="badge rounded-pill {{ ($cartCount ?? 0) > 0 ? '' : 'd-none' }}" id="cartCount">{{ $cartCount ?? 0 }}</span>

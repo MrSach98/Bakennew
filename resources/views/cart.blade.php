@@ -77,10 +77,10 @@
                             <span class="fw-semibold" id="cartSubtotal">₹{{ number_format($subtotal, 0) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span class="text-muted">Delivery Charges</span>
+                            <!-- <span class="text-muted">Delivery Charges</span>
                             <span class="fw-semibold" id="deliveryChargeDisplay">
                                 {{ $deliveryCharge > 0 ? '₹' . number_format($deliveryCharge, 0) : 'FREE' }}
-                            </span>
+                            </span> -->
                         </div>
 
                         @if ($amountToFreeDelivery > 0)

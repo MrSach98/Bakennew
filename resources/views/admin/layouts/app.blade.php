@@ -279,6 +279,12 @@ body.sidebar-closed .sidebar-toggle i{transform:rotate(180deg)}
                     <i class="fa-solid fa-gear"></i> Site Settings
                 </a>
             </li>
+            <li>
+                <a href="{{ route('admin.instagram-posts.index') }}" class="nav-link {{ request()->routeIs('admin.instagram-posts.*') ? 'active' : '' }}">
+                    <i class="fa-brands fa-instagram"></i> Instagram Posts
+                </a>
+            </li>
+        </a>
 
         </ul>
     </div>

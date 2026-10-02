@@ -109,6 +109,66 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+    // Delegated wishlist toggle — har page pe kaam karega
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.js-card-wishlist');
+        if (!btn) return;
+
+        e.preventDefault();
+        const productId = btn.dataset.productId;
+        if (!productId) return;
+
+        fetch('{{ route("wishlist.toggle") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ product_id: productId }),
+        })
+        .then(res => res.json().then(body => ({ status: res.status, body })))
+        .then(({ status, body }) => {
+            if (status === 401 && body.requires_login) {
+                const modalEl = document.getElementById('loginModal');
+                if (modalEl) new bootstrap.Modal(modalEl).show();
+                return;
+            }
+
+            if (!body.success) return;
+
+            const icon = btn.querySelector('i');
+            if (body.added) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid', 'text-danger');
+                btn.setAttribute('aria-label', 'Remove from wishlist');
+                if (typeof showToast === 'function') showToast('Added to wishlist!', 'success');
+            } else {
+                icon.classList.remove('fa-solid', 'text-danger');
+                icon.classList.add('fa-regular');
+                btn.setAttribute('aria-label', 'Add to wishlist');
+                if (typeof showToast === 'function') showToast('Removed from wishlist.', 'success');
+            }
+
+            // Header badge update
+            const el = document.getElementById('wishlistCount');
+            if (el) {
+                el.textContent = body.wishlist_count;
+                el.classList.toggle('d-none', !body.wishlist_count || body.wishlist_count <= 0);
+            }
+        })
+        .catch(() => {
+            if (typeof showToast === 'function') showToast('Something went wrong. Please try again.', 'danger');
+        });
+    });
+});
+</script>
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="{{ asset('vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
 @stack('scripts')

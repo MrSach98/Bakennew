@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\AdminReviewController;
 use App\Http\Controllers\Admin\AdminPageController;
 use App\Http\Controllers\Admin\NewsletterController;
 use App\Http\Controllers\Admin\AdminBlogController;
+use App\Http\Controllers\Admin\InstagramPostController;
 
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ProductFeedController;
@@ -67,6 +68,7 @@ Route::middleware('throttle:60,1')->group(function () {
 });
 Route::middleware('customer.auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::post('/checkout/calculate-charge', [OrderPlacementController::class, 'calculateCharge'])->name('checkout.calculate-charge');
     Route::post('/checkout/apply-coupon', [OrderPlacementController::class, 'applyCoupon'])->name('checkout.apply-coupon');
     Route::post('/checkout/remove-coupon', [OrderPlacementController::class, 'removeCoupon'])->name('checkout.remove-coupon');
     Route::post('/checkout/place-order', [OrderPlacementController::class, 'place'])->name('checkout.place');
@@ -215,6 +217,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('orders/data', [OrderController::class, 'data'])->name('orders.data');
         Route::get('orders/{order}', [OrderController::class, 'show'])->name('orders.show');
         Route::post('orders/{order}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+        Route::post('orders/{order}/update-payment', [OrderController::class, 'updatePaymentStatus'])->name('orders.update-payment');
         Route::post('orders/{order}/update-notes', [OrderController::class, 'updateAdminNotes'])->name('orders.update-notes');
 
         Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
@@ -244,6 +247,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('blogs/{blog}', [AdminBlogController::class, 'update'])->name('blogs.update');
         Route::delete('blogs/{blog}', [AdminBlogController::class, 'destroy'])->name('blogs.destroy');
         Route::post('blogs/{blog}/toggle-status', [AdminBlogController::class, 'toggleStatus'])->name('blogs.toggle-status');
+
+        Route::get('instagram-posts', [InstagramPostController::class, 'index'])->name('instagram-posts.index');
+        Route::get('instagram-posts/data', [InstagramPostController::class, 'data'])->name('instagram-posts.data');
+        Route::post('instagram-posts', [InstagramPostController::class, 'store'])->name('instagram-posts.store');
+        Route::put('instagram-posts/{instagramPost}', [InstagramPostController::class, 'update'])->name('instagram-posts.update');
+        Route::delete('instagram-posts/{instagramPost}', [InstagramPostController::class, 'destroy'])->name('instagram-posts.destroy');
+        Route::get('instagram-posts/{instagramPost}/fetch', [InstagramPostController::class, 'fetch'])->name('instagram-posts.fetch');
+        Route::post('instagram-posts/{instagramPost}/toggle-status', [InstagramPostController::class, 'toggleStatus'])->name('instagram-posts.toggle-status');
     });
     
    

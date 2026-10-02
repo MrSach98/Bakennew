@@ -116,12 +116,21 @@ class OrderController extends Controller
 
         $previousStatus = $order->status;
 
-        $order->update([
+        $data = [
             'status' => $validated['status'],
             'cancellation_reason' => $validated['status'] === 'cancelled' ? ($validated['cancellation_reason'] ?? null) : null,
-        ]);
+        ];
 
-        // Send the review request only once, when the order first becomes "delivered"
+        // COD: cash is collected at delivery, so mark the payment as paid automatically
+        if ($validated['status'] === 'delivered'
+            && $order->payment_method === 'cod'
+            && $order->payment_status === 'pending') {
+            $data['payment_status'] = 'paid';
+        }
+
+        $order->update($data);
+
+        // Review request email, only the first time the order becomes delivered
         if ($validated['status'] === 'delivered' && $previousStatus !== 'delivered' && $order->user_id && $order->customer_email) {
             try {
                 Mail::to($order->customer_email)->send(new ReviewRequestMail($order));
@@ -130,7 +139,30 @@ class OrderController extends Controller
             }
         }
 
-        return response()->json(['success' => true, 'message' => 'Order status updated successfully.']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Order status updated successfully.',
+            'payment_status' => $order->payment_status,
+        ]);
+    }
+
+    public function updatePaymentStatus(Request $request, Order $order)
+    {
+        // Online payments are verified by Razorpay, they must never be edited by hand
+        if ($order->payment_method !== 'cod') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Online payment status is managed by Razorpay and cannot be changed manually.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'payment_status' => ['required', 'in:pending,paid,failed'],
+        ]);
+
+        $order->update(['payment_status' => $validated['payment_status']]);
+
+        return response()->json(['success' => true, 'message' => 'Payment status updated successfully.']);
     }
 
     public function updateAdminNotes(Request $request, Order $order)

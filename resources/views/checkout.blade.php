@@ -201,10 +201,8 @@
                     <span class="text-muted">Subtotal</span>
                     <span id="summarySubtotal">₹{{ number_format($subtotal, 0) }}</span>
                 </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-muted" id="summaryDeliveryLabel">Delivery Charge</span>
-                    <span id="summaryDeliveryCharge">₹0</span>
-                </div>
+                <span id="summaryDeliveryLabel">Standard Delivery</span>
+                <span id="summaryDeliveryCharge">FREE</span>
                 <div class="d-flex justify-content-between mb-2 text-success d-none" id="discountRow">
                     <span>Discount</span>
                     <span id="summaryDiscount">-₹0</span>
@@ -347,24 +345,64 @@ $(function () {
     });
 
     // ---------- Delivery option change -> display update only (real charge recalculated server-side) ----------
-    function updateDeliveryCharge() {
-        const selectedOption = $('#deliveryOptionSelect option:selected');
-        const charge = parseFloat(selectedOption.data('charge')) || 0;
-        const label = selectedOption.text().split('(')[0].trim();
+   // function updateDeliveryCharge() {
+    //    const selectedOption = $('#deliveryOptionSelect option:selected');
+     //   const charge = parseFloat(selectedOption.data('charge')) || 0;
+    //    const label = selectedOption.text().split('(')[0].trim();
 
-        $('#summaryDeliveryLabel').text(label);
-        $('#summaryDeliveryCharge').text(charge > 0 ? '₹' + charge.toLocaleString('en-IN') : 'FREE');
+    //    $('#summaryDeliveryLabel').text(label);
+    //    $('#summaryDeliveryCharge').text(charge > 0 ? '₹' + charge.toLocaleString('en-IN') : 'FREE');
 
-        updateGrandTotal(charge);
-    }
+    //    updateGrandTotal(charge);
+   // }
 
-    $('#deliveryOptionSelect').on('change', updateDeliveryCharge);
+  //  $('#deliveryOptionSelect').on('change', updateDeliveryCharge);
 
-    function updateGrandTotal(deliveryCharge) {
-        const total = subtotal + deliveryCharge - currentDiscount;
-        $('#summaryGrandTotal').text('₹' + total.toLocaleString('en-IN'));
-    }
+   // function updateGrandTotal(deliveryCharge) {
+   //     const total = subtotal + deliveryCharge - currentDiscount;
+   //     $('#summaryGrandTotal').text('₹' + total.toLocaleString('en-IN'));
+   // }
+function updateDeliveryCharge() {
+    const pincode = $('input[name="pincode"]').val()?.trim();
+    const optionId = $('#deliveryOptionSelect').val();
 
+    if (!pincode || !optionId) return;
+
+    $.ajax({
+        url: "{{ route('checkout.calculate-charge') }}",
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+        contentType: 'application/json',
+        data: JSON.stringify({ pincode: pincode, delivery_option_id: optionId }),
+        success: function (data) {
+            if (!data.success) {
+                showToast(data.message, 'danger');
+                return;
+            }
+
+            $('#summaryDeliveryLabel').text($('#deliveryOptionSelect option:selected').text().split('(')[0].trim());
+            $('#summaryDeliveryCharge').text(data.delivery_charge > 0 ? '₹' + Number(data.delivery_charge).toLocaleString('en-IN') : 'FREE');
+
+            if (data.discount > 0) {
+                $('#discountRow').removeClass('d-none');
+                $('#summaryDiscount').text('-₹' + Number(data.discount).toLocaleString('en-IN'));
+            } else {
+                $('#discountRow').addClass('d-none');
+            }
+
+            $('#summaryGrandTotal').text('₹' + Number(data.total).toLocaleString('en-IN'));
+        },
+        error: function (xhr) {
+            showToast(xhr.responseJSON?.message || 'Could not calculate delivery charge.', 'danger');
+        }
+    });
+}
+
+// Delivery option badalte hi — payment method koi bhi ho (COD/Razorpay), yehi trigger hoga
+$('#deliveryOptionSelect').on('change', updateDeliveryCharge);
+
+// Pincode confirm hote hi
+$('#checkoutPincode').on('blur', updateDeliveryCharge);
     // ---------- Coupon apply ----------
     $('#applyCouponBtn').on('click', function () {
         const code = $('#couponInput').val().trim();

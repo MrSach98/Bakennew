@@ -276,7 +276,7 @@
                     </div>
                     <input type="hidden" id="selectedDeliverySlot" value="">
                 </div> -->
-                <div class="delivery-slot-picker mt-3">
+                <!-- <div class="delivery-slot-picker mt-3">
                     @if ($productDeliveryOptions->count())
                         <label class="delivery-slot-title">Available Delivery Options</label>
                         <div class="delivery-slot-grid">
@@ -315,7 +315,7 @@
                         </div>
                     </div>
                     <input type="hidden" id="selectedDeliverySlot" value="">
-                </div>
+                </div> -->
             </div>
 
             @if ($product->sku)
@@ -550,6 +550,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let quantity = 1;
     let currentEggType = 'eggless';
 
+    function updateCartBadge(count) {
+        const el = document.getElementById('cartCount');
+        if (!el) return;
+        el.textContent = count;
+        el.classList.toggle('d-none', !count || count <= 0);
+    }
     // ---------- Native product-panel scrolling (no forced page movement) ----------
     const buyNowAction = document.getElementById('buyNowAction');
     const productInfoColumn = document.querySelector('.product-info-column');
@@ -1012,61 +1018,107 @@ document.addEventListener('DOMContentLoaded', function () {
     //     })
     //     .catch(() => alert('Something went wrong. Please try again.'));
     // }
-        // ---------- Add to Cart ----------
+        // ---------- Add to Cart with delevery option ----------
+    // function submitAddToCart() {
+    //     const pincodeInput = document.getElementById('deliveryPincode');
+    //     const pincode = pincodeInput ? pincodeInput.value.trim() : '';
+    //     if (!pincode) {
+    //         showToast('Please enter your delivery pincode first!', 'danger');
+    //         if (pincodeInput) pincodeInput.focus();
+    //         return;
+    //     }
+
+    //     const selectedSlotValue = selectedDeliverySlot ? selectedDeliverySlot.value : '';
+    //     const advanceSelected = document.querySelector('.advance-booking-btn.active');
+    //     if (!selectedSlotValue) {
+    //         showToast(advanceSelected ? 'Please select advance booking date and timing.' : 'Please select a delivery slot.', 'danger');
+    //         return;
+    //     }
+    //     if (advanceSelected && (!advanceDeliveryDate?.value || !advanceDeliveryTime?.value)) {
+    //         showToast('Please select both delivery date and timing.', 'danger');
+    //         return;
+    //     }
+
+    //     const dateInput = document.getElementById('deliveryDate');
+
+    //     const payload = {
+    //         product_id: {{ $product->id }},
+    //         variant_id: selectedVariantId,
+    //         flavor_id: selectedFlavorId,
+    //         quantity: quantity,
+    //         delivery_date: dateInput ? dateInput.value : null,
+    //         delivery_slot: selectedSlotValue,
+    //         pincode: pincode,
+    //         cake_message: msgInput ? msgInput.value : null
+    //     };
+
+    //     fetch('{{ route("cart.add") }}', {
+    //         method: 'POST',
+    //         headers: {
+    //             'X-CSRF-TOKEN': '{{ csrf_token() }}',
+    //             'Content-Type': 'application/json',
+    //             'Accept': 'application/json',
+    //         },
+    //         body: JSON.stringify(payload),
+    //     })
+    //     .then(res => res.json().then(body => ({ status: res.status, body })))
+    //     .then(({ status, body }) => {
+    //         if (body.success) {
+    //             updateCartBadge(body.cart_count);   // ✅ badge show/hide + text dono handle
+    //             showToast('Product added to cart successfully!', 'success');
+    //         } else {
+    //             showToast(body.message || 'Error adding product to cart.', 'danger');
+    //         }
+    //     })
+    //     .catch(() => showToast('Something went wrong. Please try again.', 'danger'));
+    // }
+
+    // ---------- Add to Cart with delevery option ----------
     function submitAddToCart() {
-        const pincodeInput = document.getElementById('deliveryPincode');
-        const pincode = pincodeInput ? pincodeInput.value.trim() : '';
-        if (!pincode) {
-            showToast('Please enter your delivery pincode first!', 'danger');
-            if (pincodeInput) pincodeInput.focus();
-            return;
-        }
-
-        const selectedSlotValue = selectedDeliverySlot ? selectedDeliverySlot.value : '';
-        const advanceSelected = document.querySelector('.advance-booking-btn.active');
-        if (!selectedSlotValue) {
-            showToast(advanceSelected ? 'Please select advance booking date and timing.' : 'Please select a delivery slot.', 'danger');
-            return;
-        }
-        if (advanceSelected && (!advanceDeliveryDate?.value || !advanceDeliveryTime?.value)) {
-            showToast('Please select both delivery date and timing.', 'danger');
-            return;
-        }
-
-        const dateInput = document.getElementById('deliveryDate');
-
-        const payload = {
-            product_id: {{ $product->id }},
-            variant_id: selectedVariantId,
-            flavor_id: selectedFlavorId,
-            quantity: quantity,
-            delivery_date: dateInput ? dateInput.value : null,
-            delivery_slot: selectedSlotValue,
-            pincode: pincode,
-            cake_message: msgInput ? msgInput.value : null
-        };
-
-        fetch('{{ route("cart.add") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        })
-        .then(res => res.json().then(body => ({ status: res.status, body })))
-        .then(({ status, body }) => {
-            if (body.success) {
-                const cartCountEl = document.getElementById('cartCount');
-                if (cartCountEl) cartCountEl.textContent = body.cart_count;
-                showToast('Product added to cart successfully!', 'success');
-            } else {
-                showToast(body.message || 'Error adding product to cart.', 'danger');
-            }
-        })
-        .catch(() => showToast('Something went wrong. Please try again.', 'danger'));
+    const pincodeInput = document.getElementById('deliveryPincode');
+    const pincode = pincodeInput ? pincodeInput.value.trim() : '';
+    if (!pincode) {
+        showToast('Please enter your delivery pincode first!', 'danger');
+        if (pincodeInput) pincodeInput.focus();
+        return;
     }
+
+    const dateInput = document.getElementById('deliveryDate');
+
+    // Slot optional — section commented hai, to empty/null bhej denge
+    const selectedSlotValue = selectedDeliverySlot ? (selectedDeliverySlot.value || null) : null;
+
+    const payload = {
+        product_id: {{ $product->id }},
+        variant_id: selectedVariantId,
+        flavor_id: selectedFlavorId,
+        quantity: quantity,
+        delivery_date: dateInput ? dateInput.value : null,
+        delivery_slot: selectedSlotValue,       // null hoga agar select nahi kiya
+        pincode: pincode,
+        cake_message: msgInput ? msgInput.value : null
+    };
+
+    fetch('{{ route("cart.add") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    })
+    .then(res => res.json().then(body => ({ status: res.status, body })))
+    .then(({ status, body }) => {
+        if (body.success) {
+            updateCartBadge(body.cart_count);
+            showToast('Product added to cart successfully!', 'success');
+        } else {
+            showToast(body.message || 'Error adding product to cart.', 'danger');
+        }
+    })
+    .catch(() => showToast('Something went wrong. Please try again.', 'danger'));
+}
 
     const addToCartBtn = document.getElementById('addToCartBtn');
     const mobileAddToCartBtn = document.getElementById('mobileAddToCartBtn');

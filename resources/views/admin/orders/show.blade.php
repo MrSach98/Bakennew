@@ -169,12 +169,25 @@
                         <span class="badge bg-secondary">Cash on Delivery</span>
                     @endif
                 </div>
+
                 <div class="mb-2">
                     <span class="text-muted d-block small">Payment Status</span>
                     <span class="badge bg-{{ ['pending' => 'warning text-dark', 'paid' => 'success', 'failed' => 'danger', 'refunded' => 'secondary'][$order->payment_status] ?? 'secondary' }}">
                         {{ ucfirst($order->payment_status) }}
                     </span>
                 </div>
+
+                @if ($order->payment_method === 'cod')
+                    <hr>
+                    <label class="form-label small">Change Payment Status</label>
+                    <select id="paymentStatusSelect" class="form-select mb-2">
+                        @foreach (['pending' => 'Pending', 'paid' => 'Paid (cash received)', 'failed' => 'Failed'] as $val => $label)
+                            <option value="{{ $val }}" {{ $order->payment_status === $val ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <button type="button" class="btn btn-outline-dark w-100" id="updatePaymentBtn">Update Payment</button>
+                    <div class="form-text">COD orders are marked Paid automatically when delivered.</div>
+                @endif
 
                 @if ($order->payment)
                     <hr>
@@ -280,7 +293,22 @@
             }
         });
     });
-
+    
+    $('#updatePaymentBtn').on('click', function () {
+        $.ajax({
+            url: "{{ route('admin.orders.update-payment', $order) }}",
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            data: { payment_status: $('#paymentStatusSelect').val() },
+            success: function (data) {
+                showToast(data.message, 'success');
+                setTimeout(() => location.reload(), 800);
+            },
+            error: function (xhr) {
+                showToast(xhr.responseJSON?.message || 'Something went wrong.', 'danger');
+            }
+        });
+    });
     $('#saveNotesBtn').on('click', function () {
         const notes = $('#adminNotesInput').val();
 

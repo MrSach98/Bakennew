@@ -39,7 +39,8 @@ class HomeController extends StorefrontController
             ->get();
 
         // Placeholder until Instagram auto-sync is built
-        $instagramPosts = collect();
+       // $instagramPosts = collect();
+       $instagramPosts = \App\Models\InstagramPost::where('is_active', true)->orderBy('sort_order')->get();
 
         $deliveryCities = ServiceablePincode::where('is_active', true)
             ->distinct()
